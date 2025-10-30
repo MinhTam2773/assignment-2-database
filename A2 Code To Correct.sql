@@ -138,7 +138,7 @@ BEGIN
            WHERE name = r_gggs.column2;
       
           INSERT INTO gggs_stock
-          VALUES (gggs_stock_seq.NEXTVAL, v_name1, v_name2, r_gggs.column3,
+          VALUES (gggs_stock_seq.NEXTVAL, v_category_id, v_vendor_id, r_gggs.column3,
                   r_gggs.column4, r_gggs.column7, r_gggs.column8, k_active_status);
 
         -- (Check Stock Status) If the processing type is Status(S)        
