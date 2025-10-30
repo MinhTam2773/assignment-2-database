@@ -48,11 +48,9 @@ declare
    k_data_processed   constant gggs_data_upload.data_processed%type := 'Y';
    k_data_unprocessed constant gggs_data_upload.data_processed%type := 'N';
    k_no_change_char   constant char(2) := 'NC';
-   k_no_change_numb   constant number := -1;
    v_category_id      gggs_category.categoryid%type;
    v_vendor_id        gggs_vendor.vendorid%type;
    v_message          gggs_error_log_table.error_message%type;
-   v_newvendorname    gggs_vendor.name%type;
    cursor c_gggs is
    select *
      from gggs_data_upload
@@ -79,14 +77,23 @@ begin
         -- (Add New Customer) If the processing type is New(N), add the new customer 
             if ( r_gggs.process_type = k_new ) then
                begin
-                  insert into gggs_customer values ( gggs_customer_seq.nextval,
-                                                     r_gggs.column1,
-                                                     r_gggs.column2,
-                                                     r_gggs.column3,
-                                                     r_gggs.column4,
-                                                     r_gggs.column5,
-                                                     r_gggs.column6,
-                                                     k_active_status );
+                  insert into gggs_customer (
+                     customerid,
+                     name,
+                     province,
+                     first_name,
+                     last_name,
+                     city,
+                     phone_number,
+                     status
+                  ) values ( gggs_customer_seq.nextval,
+                             r_gggs.column1,
+                             r_gggs.column2,
+                             r_gggs.column3,
+                             r_gggs.column4,
+                             r_gggs.column5,
+                             r_gggs.column6,
+                             k_active_status );
 
                exception
                   when dup_val_on_index then
@@ -229,10 +236,15 @@ begin
         -- (Add New Category) If the processing type is New(N)
             if ( r_gggs.process_type = k_new ) then
                begin
-                  insert into gggs_category values ( gggs_category_seq.nextval,
-                                                     r_gggs.column1,
-                                                     r_gggs.column2,
-                                                     k_active_status );
+                  insert into gggs_category (
+                     categoryid,
+                     name,
+                     description,
+                     status
+                  ) values ( gggs_category_seq.nextval,
+                             r_gggs.column1,
+                             r_gggs.column2,
+                             k_active_status );
                exception
                   when dup_val_on_index then
                      raise_application_error(
@@ -276,14 +288,23 @@ begin
                 where name = r_gggs.column2;
 
                begin
-                  insert into gggs_stock values ( gggs_stock_seq.nextval,
-                                                  v_category_id,
-                                                  v_vendor_id,
-                                                  r_gggs.column3,
-                                                  r_gggs.column4,
-                                                  r_gggs.column7,
-                                                  r_gggs.column8,
-                                                  k_active_status );
+                  insert into gggs_stock (
+                     stockid,
+                     categoryid,
+                     supplierid,
+                     name,
+                     description,
+                     price,
+                     no_in_stock,
+                     status
+                  ) values ( gggs_stock_seq.nextval,
+                             v_category_id,
+                             v_vendor_id,
+                             r_gggs.column3,
+                             r_gggs.column4,
+                             r_gggs.column7,
+                             r_gggs.column8,
+                             k_active_status );
 
                exception
                   when dup_val_on_index then
