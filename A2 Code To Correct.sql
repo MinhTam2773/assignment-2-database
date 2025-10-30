@@ -11,27 +11,18 @@ DECLARE
   k_change            CONSTANT    gggs_data_upload.process_type%TYPE := 'C'; 
   k_active_status     CONSTANT    gggs_customer.status%TYPE := 'A';
   k_data_processed    CONSTANT    gggs_data_upload.data_processed%TYPE := 'Y';
-  k_data_unprocessed  CONSTANT   gggs_data_upload.data_processed%TYPE := 'N';
+  k_data_unprocessed  CONSTANT    gggs_data_upload.data_processed%TYPE := 'N';
   k_no_change_char    CONSTANT    CHAR(2) := 'NC';
   k_no_change_numb    CONSTANT    NUMBER := -1;  
-  v_name1                       gggs_category.categoryID%TYPE;
-  v_name2                       gggs_vendor.vendorID%TYPE; 
-  v_message                     gggs_error_log_table.error_message%TYPE;  
-
-  v_newVendorName gggs_vendor.NAME%TYPE;
+  v_category_id                   gggs_category.categoryID%TYPE;
+  v_vendor_id                     gggs_vendor.vendorID%TYPE;
+  v_message                       gggs_error_log_table.error_message%TYPE;  
+  v_newVendorName                 gggs_vendor.NAME%TYPE;
 
   CURSOR c_gggs IS
     SELECT *
       FROM gggs_data_upload
 	 ORDER BY loadID;  
-
-
--- (Comment Section -- Mikael Ly)
--- The following code is attempted to be documented according to the
--- given flowchart included with the assignment.
--- Please look at the flowchart along with this section of code 
--- to better understand the flow of code.
--- Some errors I noticed are at lines 81, and 93.
 
 BEGIN
 
@@ -81,7 +72,6 @@ BEGIN
 
         -- (Add New Vendor) If the processing type is New(N)
   IF (r_gggs.process_type = k_new) THEN
-    -- show we entered the branch
       INSERT INTO gggs_vendor(vendorID, name, description, contact_first_name,
                               contact_last_name, contact_phone_number, status)
       VALUES (gggs_vendor_seq.NEXTVAL,
@@ -90,10 +80,9 @@ BEGIN
               r_gggs.column3,
               r_gggs.column4,
               r_gggs.column6,
-              k_active_status); ---FIXED
+              k_active_status); 
 
         -- (Change Vendor Status) If the processing type is Status(S)
-        -- V there seems to be an error here. It is listed as "stats" rather than "status"   
         ELSIF (r_gggs.process_type = k_status) THEN
           UPDATE gggs_vendor
              SET status = r_gggs.column2
@@ -107,7 +96,6 @@ BEGIN
                  contact_last_name = DECODE(r_gggs.column4, k_no_change_char, contact_last_name, r_gggs.column4),
                  contact_phone_number = NVL2(r_gggs.column6, r_gggs.column6, contact_phone_number)
            WHERE name = r_gggs.column1 ;
-           -- ^ there seems to be an error here I've noticed, most likely a missing [;]
 
         -- If any other processing type, process an error.
         ELSE 
@@ -140,14 +128,14 @@ BEGIN
         -- (Add New Stock) If the processing type is New(N)
         IF (r_gggs.process_type = k_new) THEN
           SELECT categoryID
-            INTO v_name1 --2
+            INTO v_category_id
             FROM gggs_category
            WHERE name = r_gggs.column1; 
          
           SELECT vendorID
-            INTO v_name2
+            INTO v_vendor_id
             FROM gggs_vendor
-           WHERE name = r_gggs.column2; --FIXED
+           WHERE name = r_gggs.column2;
       
           INSERT INTO gggs_stock
           VALUES (gggs_stock_seq.NEXTVAL, v_name1, v_name2, r_gggs.column3,
@@ -201,6 +189,3 @@ BEGIN
 	      COMMIT;
 END;
 /
-  
-select * from gggs_data_upload;
-select * from gggs_customer;
