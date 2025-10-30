@@ -42,9 +42,16 @@ BEGIN
 
         -- (Add New Customer) If the processing type is New(N), add the new customer 
         IF (r_gggs.process_type = k_new) THEN
+          BEGIN
+
           INSERT INTO gggs_customer
           VALUES (gggs_customer_seq.NEXTVAL, r_gggs.column1, r_gggs.column2, r_gggs.column3,
                   r_gggs.column4, r_gggs.column5, r_gggs.column6, k_active_status);
+
+          EXCEPTION
+              WHEN DUP_VAL_ON_INDEX THEN
+              RAISE_APPLICATION_ERROR(-20001, 'Duplicate Name found when adding new customer: ' || r_gggs.column1);
+          END;
 
         -- (Change Customer Status) If the processing type is Status(S), Change the customer status
         ELSIF (r_gggs.process_type = k_status) THEN
@@ -72,6 +79,8 @@ BEGIN
 
         -- (Add New Vendor) If the processing type is New(N)
   IF (r_gggs.process_type = k_new) THEN
+      BEGIN
+
       INSERT INTO gggs_vendor(vendorID, name, description, contact_first_name,
                               contact_last_name, contact_phone_number, status)
       VALUES (gggs_vendor_seq.NEXTVAL,
@@ -81,6 +90,11 @@ BEGIN
               r_gggs.column4,
               r_gggs.column6,
               k_active_status); 
+      EXCEPTION
+              WHEN DUP_VAL_ON_INDEX THEN
+              RAISE_APPLICATION_ERROR(-20001, 'Duplicate Name found when adding new vendor: ' || r_gggs.column1);
+      END;
+      
 
         -- (Change Vendor Status) If the processing type is Status(S)
         ELSIF (r_gggs.process_type = k_status) THEN
@@ -107,8 +121,13 @@ BEGIN
 
         -- (Add New Category) If the processing type is New(N)
         IF (r_gggs.process_type = k_new) THEN
+        BEGIN
           INSERT INTO gggs_category
           VALUES (gggs_category_seq.NEXTVAL, r_gggs.column1, r_gggs.column2, k_active_status);
+        EXCEPTION
+              WHEN DUP_VAL_ON_INDEX THEN
+              RAISE_APPLICATION_ERROR(-20001, 'Duplicate Name found when adding new Category: ' || r_gggs.column1);
+        END;
 
         -- (Change Category Status) If the processing type is Status(S)    
         ELSIF (r_gggs.process_type = k_status) THEN
@@ -136,10 +155,17 @@ BEGIN
             INTO v_vendor_id
             FROM gggs_vendor
            WHERE name = r_gggs.column2;
+
+          BEGIN 
       
           INSERT INTO gggs_stock
           VALUES (gggs_stock_seq.NEXTVAL, v_category_id, v_vendor_id, r_gggs.column3,
                   r_gggs.column4, r_gggs.column7, r_gggs.column8, k_active_status);
+
+          EXCEPTION
+              WHEN DUP_VAL_ON_INDEX THEN
+              RAISE_APPLICATION_ERROR(-20001, 'Duplicate Name found when adding new Stock: ' || r_gggs.column3);
+          END;
 
         -- (Check Stock Status) If the processing type is Status(S)        
         ELSIF (r_gggs.process_type = k_status) THEN
